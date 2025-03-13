@@ -30,41 +30,46 @@ const (
 	ModWidthReg = 0x24
 )
 
-var spi = machine.SPI0
-var rfidCS = machine.GPIO17
-var rfidRST = machine.GPIO20
-
-func writeRegister(addr, val uint8) {
-	rfidCS.Low()
-	//spi.Transfer(addr & 0x7E)
-	spi.Transfer(addr << 1)
-	spi.Transfer(val)
-	rfidCS.High()
+type RFID struct {
+	spi    *machine.SPI
+	csPin  machine.Pin
+	rstPin machine.Pin
 }
 
-func readRegister(addr uint8) uint8 {
-	rfidCS.Low()
-	spi.Transfer((addr << 1) | 0x80)
-	val, _ := spi.Transfer(0x00)
-	rfidCS.High()
+func (rf *RFID) writeRegister(addr, val uint8) {
+	rf.csPin.Low()
+	//spi.Transfer(addr & 0x7E)
+	rf.spi.Transfer(addr << 1)
+	rf.spi.Transfer(val)
+	rf.csPin.High()
+}
+
+func (rf *RFID) readRegister(addr uint8) uint8 {
+	rf.csPin.Low()
+	rf.spi.Transfer((addr << 1) | 0x80)
+	val, _ := rf.spi.Transfer(0x00)
+	rf.csPin.High()
 	return val
 }
 
-func reset() {
-	writeRegister(CommandReg, 0x0F)
+func (rf *RFID) reset() {
+	rf.writeRegister(CommandReg, 0x0F)
 	time.Sleep(50 * time.Millisecond)
 }
 
-func initRFID() {
-	rfidCS.Configure(machine.PinConfig{Mode: machine.PinOutput})
-	rfidRST.Configure(machine.PinConfig{Mode: machine.PinOutput})
-	spi.Configure(machine.SPIConfig{Frequency: 1_000_000, Mode: 0})
+func initRFID() RFID {
+	rf := RFID{spi: machine.SPI0, csPin: machine.GPIO17, rstPin: machine.GPIO20}
+	rf.csPin.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	rf.rstPin.Configure(machine.PinConfig{Mode: machine.PinOutput})
+	print(rf.spi.Configure(machine.SPIConfig{Frequency: 1_000_000, Mode: 0}))
 
-	rfidRST.High()
+	rf.rstPin.High()
 	time.Sleep(50 * time.Millisecond)
 
-	reset()
-	writeRegister(TxControlReg, 0x03) // Enable the antenna
+	rf.reset()
+	rf.writeRegister(TxControlReg, 0x03) // Enable the antenna
+
+	return rf
 }
 
 // func IsNewCard() bool {
@@ -76,20 +81,22 @@ func initRFID() {
 // 	writeRegister(ModWidthReg, 0x26)
 
 // }
+var rfid RFID
 
 func main() {
-	initRFID()
 	time.Sleep(500 * time.Millisecond)
-	version := readRegister(VersionReg)
+	rfid = initRFID()
+
+	version := rfid.readRegister(VersionReg)
 	println(version)
 
 	//Valid Write
-	writeRegister(CommandReg, 0x00)
-	println(readRegister(CommandReg))
-	writeRegister(CommandReg, 0xC)
-	println(readRegister(CommandReg))
-	writeRegister(CommandReg, 0x00)
-	println(readRegister(CommandReg))
+	rfid.writeRegister(CommandReg, 0x00)
+	println(rfid.readRegister(CommandReg))
+	rfid.writeRegister(CommandReg, 0xC)
+	println(rfid.readRegister(CommandReg))
+	rfid.writeRegister(CommandReg, 0x00)
+	println(rfid.readRegister(CommandReg))
 
 	// for {
 	// 	status := readRegister(Status1Reg)
