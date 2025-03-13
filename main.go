@@ -124,58 +124,78 @@ func (rf *RFID) readRegister(addr byte) byte {
 	rf.csPin.High()
 	return result[1:][0]
 }
-
-func (rf *RFID) ReadRegisterBytes(reg uint8, count int, values []byte, rxAlign byte) {
-	// if readLen < 1 {
-	// 	return nil, nil
-	// }
-	// rf.csPin.Low()
-	// data := make([]byte, 0, readLen+1)
-	// for range readLen {
-	// 	data = append(data, 0x80|reg)
-	// }
-	// data = append(data, 0)
-	// // var gg []byte
-	// // m.spi.Tx(data, gg)
-	// // print(gg)
-
-	// res := make([]byte, len(data))
-	// if err := rf.spi.Tx(data, res); err != nil {
-	// 	return nil, err
-	// }
-	// rf.csPin.High()
-	// return res[1:], nil
-	if count == 0 {
-		return
+func (rf *RFID) ReadRegisterBytes(reg uint8, readLen int) ([]byte, error) {
+	rf.csPin.Low()
+	if readLen < 1 {
+		return nil, nil
 	}
-	//Serial.print(F("Reading ")); 	Serial.print(count); Serial.println(F(" bytes from register."));
-	address := 0x80 | reg // MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
-	index := 0            // Index in values array.
 
-	rf.csPin.Low()           // Select slave
-	count--                  // One read is performed outside of the loop
-	rf.spi.Transfer(address) // Tell MFRC522 which address we want to read
-	if rxAlign != 0 {        // Only update bit positions rxAlign..7 in values[0]
-		// Create bit mask for bit positions rxAlign..7
-		var mask byte
-		mask = (0xFF << rxAlign) & 0xFF
-		// Read value and tell that we want to read the same address again.
-		value, _ := rf.spi.Transfer(address)
-		// Apply mask to both current value of values[0] and the new data in value.
-		values[0] = (values[0] & ^mask) | (value & mask)
-		index++
+	data := make([]byte, 0, readLen+1)
+	for range readLen {
+		data = append(data, 0x80|reg<<1)
 	}
-	for {
-		if index < count {
-			break
-		}
-		values[index], _ = rf.spi.Transfer(address) // Read value and tell that we want to read the same address again.
-		index++
-	}
-	values[index], _ = rf.spi.Transfer(0) // Read the final byte. Send 0 to stop reading.
-	rf.csPin.High()                       // Release slave again
+	data = append(data, 0)
 
+	res := make([]byte, len(data))
+	if err := rf.spi.Tx(data, res); err != nil {
+		return nil, err
+	}
+	rf.csPin.High()
+	return res[1:], nil
 }
+
+// func (rf *RFID) ReadRegisterBytes(reg uint8, count int, values []byte, rxAlign byte) {
+// 	// if readLen < 1 {
+// 	// 	return nil, nil
+// 	// }
+// 	// rf.csPin.Low()
+// 	// data := make([]byte, 0, readLen+1)
+// 	// for range readLen {
+// 	// 	data = append(data, 0x80|reg)
+// 	// }
+// 	// data = append(data, 0)
+// 	// // var gg []byte
+// 	// // m.spi.Tx(data, gg)
+// 	// // print(gg)
+
+// 	// res := make([]byte, len(data))
+// 	// if err := rf.spi.Tx(data, res); err != nil {
+// 	// 	return nil, err
+// 	// }
+// 	// rf.csPin.High()
+// 	// return res[1:], nil
+
+// 	if count == 0 {
+// 		return
+// 	}
+// 	//Serial.print(F("Reading ")); 	Serial.print(count); Serial.println(F(" bytes from register."));
+// 	address := 0x80 | reg // MSB == 1 is for reading. LSB is not used in address. Datasheet section 8.1.2.3.
+// 	index := 0            // Index in values array.
+
+// 	rf.csPin.Low()           // Select slave
+// 	count--                  // One read is performed outside of the loop
+// 	rf.spi.Transfer(address) // Tell MFRC522 which address we want to read
+// 	if rxAlign != 0 {        // Only update bit positions rxAlign..7 in values[0]
+// 		// Create bit mask for bit positions rxAlign..7
+// 		var mask byte
+// 		mask = (0xFF << rxAlign) & 0xFF
+// 		// Read value and tell that we want to read the same address again.
+// 		value, _ := rf.spi.Transfer(address)
+// 		// Apply mask to both current value of values[0] and the new data in value.
+// 		values[0] = (values[0] & ^mask) | (value & mask)
+// 		index++
+// 	}
+// 	for {
+// 		if index < count {
+// 			break
+// 		}
+// 		values[index], _ = rf.spi.Transfer(address) // Read value and tell that we want to read the same address again.
+// 		index++
+// 	}
+// 	values[index], _ = rf.spi.Transfer(0) // Read the final byte. Send 0 to stop reading.
+// 	rf.csPin.High()                       // Release slave again
+
+// }
 
 func (rf *RFID) writeRegisterBytes(
 	reg uint8, ///< The register to write to. One of the PCD_Register enums.
@@ -220,8 +240,8 @@ func (rf *RFID) IsNewCard() bool {
 	rf.writeRegister(RxModeReg, 0x00)
 	rf.writeRegister(ModWidthReg, 0x26)
 	result := rf.PICC_RequestA(bufferATQA, bufferSize)
-	println(444444444)
-	println(result)
+	//println(444444444)
+	//println(result)
 	return result == STATUS_OK
 }
 
@@ -249,10 +269,10 @@ func (rf *RFID) PICC_REQA_or_WUPA(
 	if status != STATUS_OK {
 		return status
 	}
-	println(22222222)
-	println(bufferSize, validBits)
+	//println(22222222)
+	//println(bufferSize, validBits)
 	if bufferSize != 2 || validBits != 0 { // ATQA must be exactly 16 bits
-		println(8080804)
+		//println(8080804)
 		return STATUS_ERROR
 	}
 
@@ -339,15 +359,15 @@ func (rf *RFID) PCD_CommunicateWithPICC(
 	// println(ComIrqReg)
 	for range 2000 {
 		val := rf.readRegister(ComIrqReg)
-		println(405)
-		println(rf.readRegister(Status2Reg))
+		//println(405)
+		//println(rf.readRegister(Status2Reg))
 
-		println(102)
-		println(rf.readRegister(ComIrqReg))
+		//println(102)
+		//println(rf.readRegister(ComIrqReg))
 
 		if val&(irqWait) != 0x00 {
-			println(406)
-			println(rf.readRegister(Status2Reg))
+			//println(406)
+			//println(rf.readRegister(Status2Reg))
 			//println(103)
 			//println(ComIrqReg)
 			completed = true
@@ -355,13 +375,13 @@ func (rf *RFID) PCD_CommunicateWithPICC(
 		}
 		//print(val)
 		if val&(0x01) != 0x00 {
-			println(8080801)
+			//println(8080801)
 			return STATUS_TIMEOUT
 		}
 	}
 	//println(completed)
 	if !completed {
-		println(8080802)
+		//println(8080802)
 		return STATUS_TIMEOUT
 	}
 
@@ -372,7 +392,7 @@ func (rf *RFID) PCD_CommunicateWithPICC(
 	//println(errStatus)
 
 	if errStatus&0x13 != 0 {
-		println(8080803)
+		//println(8080803)
 		return STATUS_ERROR
 	}
 	var _validBits byte
@@ -383,12 +403,12 @@ func (rf *RFID) PCD_CommunicateWithPICC(
 		if int(n) > backLen {
 			return STATUS_NO_ROOM
 		}
-		backLen = int(n)                                             // Number of bytes returned
-		rf.ReadRegisterBytes(FIFODataReg, int(n), backData, rxAlign) // Get received data from FIFO
-		_validBits = rf.readRegister(ControlReg)                     // RxLastBits[2:0] indicates the number of valid bits in the last received byte. If this value is 000b, the whole byte is valid.
+		backLen = int(n)                                        // Number of bytes returned
+		backData, _ = rf.ReadRegisterBytes(FIFODataReg, int(n)) // Get received data from FIFO
+		_validBits = rf.readRegister(ControlReg)                // RxLastBits[2:0] indicates the number of valid bits in the last received byte. If this value is 000b, the whole byte is valid.
 		_validBits = _validBits & 0x07
-		println(7707)
-		println(_validBits)
+		//println(7707)
+		//println(_validBits)
 		if *validBits != 0x00 {
 			*validBits = _validBits
 		}
@@ -518,10 +538,11 @@ func main() {
 	// }
 
 	for {
-		if rfid.IsNewCard() {
-			println("I'm success")
+		if !rfid.IsNewCard() {
+			continue
 		}
-		time.Sleep(1 * time.Second)
+		println("success")
+		time.Sleep(50 * time.Millisecond)
 	}
 
 	// for {
