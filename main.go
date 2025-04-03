@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// By Nathakorn J
 // MFRC522 Registers
 const (
 	CommandReg      = 0x01
@@ -308,34 +309,34 @@ func (rf *RFID) PCD_TransceiveData(
 	var waitIRq byte
 	waitIRq = 0x30 // RxIRq and IdleIRq
 
-	println(10801)
+	//println(10801)
 	//for (byte i = 0; i < sendLen; i++) {
-	count := 0
-	//for(byte count = 0 ;count < bufferUsed; count++){
-	print("Send Data: ")
-	for {
-		if count >= sendLen {
-			break
-		}
-		print(sendData[count])
-		print(" ")
-		count++
-	}
-	print(" Len: " + strconv.FormatInt(int64(sendLen), 10))
-	print("\n")
-	count = 0
-	//for(byte count = 0 ;count < bufferUsed; count++){
-	print("Back Data : ")
-	for {
-		if count >= *backLen {
-			break
-		}
-		print(backData[count])
-		print(" ")
-		count++
-	}
-	print(" Len: " + strconv.FormatInt(int64(*backLen), 10))
-	print("\n")
+	// count := 0
+	// //for(byte count = 0 ;count < bufferUsed; count++){
+	// print("Send Data: ")
+	// for {
+	// 	if count >= sendLen {
+	// 		break
+	// 	}
+	// 	print(sendData[count])
+	// 	print(" ")
+	// 	count++
+	// }
+	// print(" Len: " + strconv.FormatInt(int64(sendLen), 10))
+	// print("\n")
+	// count = 0
+	// //for(byte count = 0 ;count < bufferUsed; count++){
+	// print("Back Data : ")
+	// for {
+	// 	if count >= *backLen {
+	// 		break
+	// 	}
+	// 	print(backData[count])
+	// 	print(" ")
+	// 	count++
+	// }
+	// print(" Len: " + strconv.FormatInt(int64(*backLen), 10))
+	// print("\n")
 	return rf.PCD_CommunicateWithPICC(PCD_Transceive, waitIRq, sendData, sendLen, backData, backLen, validBits, rxAlign, false)
 } // End PCD_TransceiveData()
 
@@ -410,8 +411,8 @@ func (rf *RFID) PCD_CommunicateWithPICC(
 		//println(rf.readRegister(ComIrqReg))
 
 		if val&(irqWait) != 0x00 {
-			println(406)
-			println(rf.readRegister(Status2Reg))
+			//println(406)
+			//println(rf.readRegister(Status2Reg))
 			//println(103)
 			//println(ComIrqReg)
 			completed = true
@@ -455,20 +456,20 @@ func (rf *RFID) PCD_CommunicateWithPICC(
 		for i := 0; i < *backLen; i++ {
 			backData[i] = toAssign[i] // Assign values to the first 5 elements
 		}
-		println("202021")
-		println(backLen)
-		print("Back Data : ")
-		count := 0
-		for {
-			if count >= *backLen {
-				break
-			}
-			print(backData[count])
-			print(" ")
-			count++
-		}
-		print(" Len: " + strconv.FormatInt(int64(*backLen), 10))
-		print("\n")
+		// println("202021")
+		// println(backLen)
+		// print("Back Data : ")
+		// count := 0
+		// for {
+		// 	if count >= *backLen {
+		// 		break
+		// 	}
+		// 	print(backData[count])
+		// 	print(" ")
+		// 	count++
+		// }
+		// print(" Len: " + strconv.FormatInt(int64(*backLen), 10))
+		// print("\n")
 
 		_validBits = rf.readRegister(ControlReg) // RxLastBits[2:0] indicates the number of valid bits in the last received byte. If this value is 000b, the whole byte is valid.
 		_validBits = _validBits & 0x07
@@ -546,7 +547,7 @@ func (rf *RFID) PCD_CommunicateWithPICC(
 	// }
 	// return STATUS_OK
 	//}
-	println("Transceive_OK")
+	//println("Transceive_OK")
 	return STATUS_OK
 }
 
@@ -578,7 +579,7 @@ func (rf *RFID) PICC_Select(
 	uid *Uid, ///< Pointer to Uid struct. Normally output, but can also be used to supply a known UID.
 	validBits byte, ///< The number of known UID bits supplied in *uid. Normally 0. If set you must also supply uid->size.
 ) StatusCode {
-	println("SC----------------------")
+	//println("SC----------------------")
 	var uidComplete bool
 	var selectDone bool
 	var useCascadeTag bool
@@ -592,8 +593,8 @@ func (rf *RFID) PICC_Select(
 	var currentLevelKnownBits int // The number of known UID bits in the current Cascade Level.
 	var buffer [9]byte            // The SELECT/ANTICOLLISION commands uses a 7 byte standard frame + 2 bytes CRC_A
 	var bufferUsed byte           // The number of bytes used in the buffer, ie the number of bytes to transfer to the FIFO.
-	println(10802)
-	PrintBuffer(buffer[:], 9)
+	//println(10802)
+	//PrintBuffer(buffer[:], 9)
 	var rxAlign byte    // Used in BitFramingReg. Defines the bit position for the first bit received.
 	var txLastBits byte // Used in BitFramingReg. The number of valid bits in the last transmitted byte.
 	var responseBuffer []byte
@@ -663,8 +664,8 @@ func (rf *RFID) PICC_Select(
 			return STATUS_INTERNAL_ERROR
 			//break;
 		}
-		println(10803)
-		PrintBuffer(buffer[:], 9)
+		//println(10803)
+		//PrintBuffer(buffer[:], 9)
 		// How many UID bits are known in this Cascade Level?
 		currentLevelKnownBits = int(validBits - (8 * uidIndex))
 		if currentLevelKnownBits < 0 {
@@ -700,8 +701,8 @@ func (rf *RFID) PICC_Select(
 			if bytesToCopy > maxBytes {
 				bytesToCopy = maxBytes
 			}
-			println(10811)
-			PrintBuffer(buffer[:], 9)
+			//println(10811)
+			//PrintBuffer(buffer[:], 9)
 			var bufferCount int
 			bufferCount = 0
 			//for (count = 0; count < bytesToCopy; count++) {//@audit loop
@@ -719,8 +720,8 @@ func (rf *RFID) PICC_Select(
 		if useCascadeTag {
 			currentLevelKnownBits += 8
 		}
-		println(10804)
-		PrintBuffer(buffer[:], 9)
+		//println(10804)
+		//PrintBuffer(buffer[:], 9)
 		// Repeat anti collision loop until we can transmit all UID bits + BCC and receive a SAK - max 32 iterations.
 		selectDone = false
 		//while (!selectDone) { //@audit for loop
@@ -732,8 +733,8 @@ func (rf *RFID) PICC_Select(
 			if currentLevelKnownBits >= 32 { // All UID bits in this Cascade Level are known. This is a SELECT.
 				//Serial.print(F("SELECT: currentLevelKnownBits=")); Serial.println(currentLevelKnownBits, DEC);
 
-				println(10805)
-				PrintBuffer(buffer[:], 9)
+				//println(10805)
+				//PrintBuffer(buffer[:], 9)
 				buffer[1] = 0x70 // NVB - Number of Valid Bits: Seven whole bytes
 
 				// Calculate BCC - Block Check Character
@@ -752,11 +753,11 @@ func (rf *RFID) PICC_Select(
 				// Store response in the last 3 bytes of buffer (BCC and CRC_A - not needed after tx)
 				responseBuffer = buffer[6:]
 				responseLength = 3
-				println(10806)
-				PrintBuffer(buffer[:], 9)
+				//println(10806)
+				//PrintBuffer(buffer[:], 9)
 			} else { // This is an ANTICOLLISION.
-				println(10807)
-				PrintBuffer(buffer[:], 9)
+				//println(10807)
+				//PrintBuffer(buffer[:], 9)
 				//Serial.print(F("ANTICOLLISION: currentLevelKnownBits=")); Serial.println(currentLevelKnownBits, DEC);
 				txLastBits = byte(currentLevelKnownBits % 8)
 				count = byte(currentLevelKnownBits / 8) // Number of whole bytes in the UID part.
@@ -774,25 +775,25 @@ func (rf *RFID) PICC_Select(
 				// Store response in the unused part of buffer
 				responseBuffer = buffer[index:]
 				responseLength = len(buffer) - int(index)
-				println(10808)
-				PrintBuffer(buffer[:], 9)
+				//println(10808)
+				//PrintBuffer(buffer[:], 9)
 			}
 
 			// Set bit adjustments
 			rxAlign = txLastBits                                     // Having a separate variable is overkill. But it makes the next line easier to read.
 			rf.writeRegister(BitFramingReg, (rxAlign<<4)+txLastBits) // RxAlign = BitFramingReg[6..4]. TxLastBits = BitFramingReg[2..0]
-			println("------------------")
-			println("PCD_TransceiveData")
-			println(10809)
-			PrintBuffer(buffer[:], 9)
-			PrintBuffer(responseBuffer, byte(responseLength))
+			//println("------------------")
+			//println("PCD_TransceiveData")
+			//println(10809)
+			//PrintBuffer(buffer[:], 9)
+			//PrintBuffer(responseBuffer, byte(responseLength))
 			// Transmit the buffer and receive the response.
 			//responseBuffertmp := make([]byte, responseLength)
 			result = rf.PCD_TransceiveData(buffer[:], int(bufferUsed), responseBuffer, responseLengthPtr, &txLastBits, rxAlign, false)
-			println(10810)
-			PrintBuffer(responseBuffer, byte(responseLength))
-			PrintBuffer(buffer[:], 9)
-			println("------------------")
+			//println(10810)
+			//PrintBuffer(responseBuffer, byte(responseLength))
+			//PrintBuffer(buffer[:], 9)
+			//println("------------------")
 			if result == STATUS_COLLISION { // More than one PICC in the field => collision.
 				var valueOfCollReg byte
 				valueOfCollReg = rf.readRegister(CollReg) // CollReg[7..0] bits are: ValuesAfterColl reserved CollPosNotValid CollPos[4:0]
@@ -860,8 +861,8 @@ func (rf *RFID) PICC_Select(
 		var bytesToCopyCount int
 		bytesToCopyCount = 0
 		//for (count = 0; count < bytesToCopy; count++) {
-		println(10815)
-		println(index, bytesToCopy, uidIndex)
+		//println(10815)
+		//println(index, bytesToCopy, uidIndex)
 		for {
 			if bytesToCopyCount >= int(bytesToCopy) {
 				break
@@ -870,9 +871,9 @@ func (rf *RFID) PICC_Select(
 			uid.uidByte[int(uidIndex)+bytesToCopyCount] = buffer[index]
 			bytesToCopyCount++
 			index++
-			println(10812)
-			PrintBuffer(buffer[:], 9)
-			PrintBuffer(uid.uidByte[:], bytesToCopy)
+			//println(10812)
+			//PrintBuffer(buffer[:], 9)
+			//PrintBuffer(uid.uidByte[:], bytesToCopy)
 		}
 
 		// Check response SAK (Select Acknowledge)
@@ -989,6 +990,11 @@ func initRFID() RFID {
 	return rf
 }
 
+func byteToHex(b byte) string {
+	hexChars := "0123456789ABCDEF"
+	return string([]byte{hexChars[b>>4], hexChars[b&0x0F]})
+}
+
 var rfid RFID
 
 func main() {
@@ -1026,34 +1032,41 @@ func main() {
 	// }
 
 	for {
-		time.Sleep(2 * time.Second)
+
+		//time.Sleep(2 * time.Second)
 		if !rfid.IsNewCard() {
-			println("NC----------------------")
+			//println("NC----------------------")
 			continue
 		}
-		//println("NewCard at " + time.Now().Format("15:04:05"))
+		//println("\033[2J\033[H")
+		//println("NewCard at " + time.Now().Format("15:04:05.000000"))
 		//println("----------")
 		serial := rfid.PICC_ReadCardSerial()
 		if !serial {
 			continue
 		}
 
-		println("ReadCardSerial at " + time.Now().Format("15:04:05"))
-
-		print("Card UID:")
+		//println("ReadCardSerial at " + time.Now().Format("15:04:05.000000"))
+		currentUID := ""
+		//print("Card UID:")
 		for i := 0; i < int(rfid.uid.size); i++ {
 			if rfid.uid.uidByte[i] < 0x10 {
-				print((" 0"))
+				//print((" 0"))
+				currentUID = " 0"
 			} else {
-				print((" "))
+				//print((" "))
+				currentUID += " "
 			}
 
-			print(rfid.uid.uidByte[i])
+			//printf("%02X",rfid.uid.uidByte[i])
+			//print(byteToHex(rfid.uid.uidByte[i]))
+			currentUID += byteToHex(rfid.uid.uidByte[i])
 		}
-		println()
-
-		println("NC----------------------")
-		time.Sleep(50 * time.Millisecond)
+		//println()
+		currentUID += "\n"
+		machine.Serial.Write([]byte(currentUID))
+		//println("NC----------------------")
+		time.Sleep(200 * time.Millisecond)
 	}
 
 	// for {
