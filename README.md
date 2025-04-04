@@ -1,4 +1,3 @@
-```markdown
 # RFID-TinyGo
 
 A lightweight and custom-built **MFRC522 RFID library** for [TinyGo](https://tinygo.org/), designed to work with microcontrollers like the **Raspberry Pi Pico** over **SPI**.
