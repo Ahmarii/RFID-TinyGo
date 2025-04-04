@@ -95,5 +95,3 @@ Created as part of my **POSCashier** project to support hardware integration on 
 
 > Made with 🧠 and ❤️ by [Ahmarii](https://github.com/Ahmarii)
 ```
-
----
